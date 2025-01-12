@@ -33,9 +33,14 @@ jobs:
           C:/vcpkg/installed
         key: ${{ env.cache-name }}-v1
 
-    - name: Install zlib
+#    - name: Download and install zlib (Windows)
+#      if: matrix.os == 'windows-latest'
+#      run: powershell -Command "(Invoke-WebRequest -Uri https://git.io/JnHTY -OutFile install_zlib.bat)"; ./install_zlib.bat; del install_zlib.bat
+#      shell: cmd
+
+    - name: Install zlib (vcpkg)
       if: matrix.os == 'windows-latest'
-      run: vcpkg install zlib
+      run: vcpkg install zlib:x86-windows
 
     - uses: actions/checkout@v4
 
@@ -59,13 +64,10 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: bash
       working-directory: ${{github.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -A win32
 
     - name: Build
-      working-directory: ${{github.workspace}}/build
-      shell: bash
-      # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: cmake --build . --config $BUILD_TYPE
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
       
     - name: Archive production artifacts
       uses: actions/upload-artifact@v4
