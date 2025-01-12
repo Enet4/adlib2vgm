@@ -726,6 +726,9 @@ bool Ca2mv2Player::_4op_vol_valid_chan(int chan)
 void Ca2mv2Player::set_ins_volume(uint8_t modulator, uint8_t carrier, int chan)
 {
     tINSTR_DATA *instr = get_instr_data_by_ch(chan);
+    if (!instr) {
+        return;
+    }
 
     // ** OPL3 emulation workaround **
     // force muted instrument volume with missing channel ADSR data
