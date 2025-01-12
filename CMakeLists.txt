@@ -16,10 +16,8 @@ file(GLOB_RECURSE SOURCES_FMTS_DEPS "deps/*.c")
 file(GLOB_RECURSE SOURCES_FAKE_ADPLUG "FakeAdplug/*.cpp")
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
-find_library(ZLIB "z")
-if(NOT ZLIB)
-	message(FATAL_ERROR "static zlib library not found")
-endif()
+
+find_package(ZLIB REQUIRED)
 
 add_executable(adlib2vgm
 	${SOURCES_BINIO}
@@ -33,4 +31,4 @@ add_executable(adlib2vgm
 
 target_include_directories(adlib2vgm PRIVATE "deps")
 
-target_link_libraries(adlib2vgm ${ZLIB})
+target_link_libraries(adlib2vgm PRIVATE ZLIB::ZLIB)

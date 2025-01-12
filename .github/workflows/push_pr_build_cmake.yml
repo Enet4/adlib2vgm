@@ -1,6 +1,12 @@
 name: Build
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: 
+      - '*'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -15,6 +21,22 @@ jobs:
     runs-on: ${{matrix.os}}
 
     steps:
+    - name: Cache vcpkg packages
+      if: matrix.os == 'windows-latest'
+      uses: actions/cache@v3
+      env:
+        cache-name: vcpkg-packages
+      with:
+        path: |
+          C:/vcpkg/archives
+          C:/vcpkg/packages
+          C:/vcpkg/installed
+        key: ${{ env.cache-name }}-v1
+
+    - name: Install zlib
+      if: matrix.os == 'windows-latest'
+      run: vcpkg install zlib
+
     - uses: actions/checkout@v4
 
     - name: Create Build Environment
@@ -22,7 +44,8 @@ jobs:
       # We'll use this as our working directory for all subsequent commands
       run: cmake -E make_directory ${{github.workspace}}/build
 
-    - name: Configure CMake
+    - name: Configure CMake (linux)
+      if: matrix.os == 'ubuntu-latest'
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
       shell: bash
@@ -31,6 +54,12 @@ jobs:
       # and build directories, but this is only available with CMake 3.13 and higher.  
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+
+    - name: Configure CMake (windows)
+      if: matrix.os == 'windows-latest'
+      shell: bash
+      working-directory: ${{github.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
 
     - name: Build
       working-directory: ${{github.workspace}}/build
