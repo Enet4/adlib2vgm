@@ -1,6 +1,12 @@
 name: Build
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: 
+      - '*'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -8,21 +14,38 @@ env:
 
 jobs:
   build:
-    # The CMake configure and build commands are platform agnostic and should work equally
-    # well on Windows or Mac.  You can convert this to a matrix build if you need
-    # cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{matrix.os}}
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Cache vcpkg packages
+      if: matrix.os == 'windows-latest'
+      uses: actions/cache@v3
+      env:
+        cache-name: vcpkg-packages
+      with:
+        path: |
+          C:/vcpkg/archives
+          C:/vcpkg/packages
+          C:/vcpkg/installed
+        key: ${{ env.cache-name }}-v1
+
+    - name: Install zlib (vcpkg)
+      if: matrix.os == 'windows-latest'
+      run: vcpkg install zlib:x86-windows-static
+
+    - uses: actions/checkout@v4
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
       # We'll use this as our working directory for all subsequent commands
       run: cmake -E make_directory ${{github.workspace}}/build
 
-    - name: Configure CMake
+    - name: Configure CMake (linux)
+      if: matrix.os == 'ubuntu-latest'
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
       shell: bash
@@ -32,15 +55,27 @@ jobs:
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
-    - name: Build
-      working-directory: ${{github.workspace}}/build
+    - name: Configure CMake (windows)
+      if: matrix.os == 'windows-latest'
       shell: bash
-      # Execute the build.  You can specify a specific target with "--target <NAME>"
-      run: cmake --build . --config $BUILD_TYPE
+      working-directory: ${{github.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static -A win32
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
       
     - name: Archive production artifacts
-      uses: actions/upload-artifact@v2
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
       with:
-        name: Upload build artifact
-        path: |
-          ${{github.workspace}}/build/adlib2vgm
+        name: adlib2vgm-linux
+        path: ${{github.workspace}}/build/adlib2vgm
+        if-no-files-found: error
+
+    - name: Archive production artifacts (windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: adlib2vgm-win32
+        path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/adlib2vgm.exe
+        if-no-files-found: error
