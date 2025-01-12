@@ -17,7 +17,7 @@ jobs:
     runs-on: ${{matrix.os}}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
@@ -39,21 +39,19 @@ jobs:
       shell: bash
       # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE
-      
+
     - name: Archive production artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
-        name: Upload build artifact
-        path: |
-          ${{github.workspace}}/build/adlib2vgm
-      
+        path: ${{github.workspace}}/build/adlib2vgm
+        if-no-files-found: error
+
     - name: Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
           ${{github.workspace}}/build/adlib2vgm
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
