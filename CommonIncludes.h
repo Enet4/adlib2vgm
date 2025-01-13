@@ -31,10 +31,16 @@
 #include <cassert>
 #include <cstring>
 
-#include <unistd.h>
 #include <fcntl.h>
 
+#ifdef _MSC_VER 
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#endif
+
+#ifndef stricmp
 #define stricmp			strcasecmp
+#endif
 #define AdPlug_LogWrite(...)		if (global_debug) printf(__VA_ARGS__)
 #define AdPlug_LogError(...)		fprintf(stderr, __VA_ARGS__)
 
