@@ -68,6 +68,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
       with:
+        name: adlib2vgm-linux
         path: ${{github.workspace}}/build/adlib2vgm
         if-no-files-found: error
 
@@ -75,5 +76,6 @@ jobs:
       if: matrix.os == 'windows-latest'
       uses: actions/upload-artifact@v4
       with:
+        name: adlib2vgm-win32
         path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/adlib2vgm.exe
         if-no-files-found: error
