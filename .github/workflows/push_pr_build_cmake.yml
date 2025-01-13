@@ -35,7 +35,7 @@ jobs:
 
     - name: Install zlib (vcpkg)
       if: matrix.os == 'windows-latest'
-      run: vcpkg install zlib:x86-windows
+      run: vcpkg install zlib:x86-windows-static
 
     - uses: actions/checkout@v4
 
@@ -59,7 +59,7 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: bash
       working-directory: ${{github.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -A win32
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static -A win32
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
