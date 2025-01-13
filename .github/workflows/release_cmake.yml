@@ -60,10 +60,10 @@ jobs:
     - name: Build
       working-directory: ${{github.workspace}}/build
       shell: bash
-      # Execute the build.  You can specify a specific target with "--target <NAME>"
       run: cmake --build . --config $BUILD_TYPE
 
     - name: Archive production artifacts
+      id: artifacts-linux
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
       with:
@@ -72,6 +72,7 @@ jobs:
         if-no-files-found: error
 
     - name: Archive production artifacts (windows)
+      id: artifacts-windows
       if: matrix.os == 'windows-latest'
       uses: actions/upload-artifact@v4
       with:
@@ -79,9 +80,20 @@ jobs:
         path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/adlib2vgm.exe
         if-no-files-found: error
 
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/tags/')
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload release assets (linux)
+      uses: sekwah41/upload-release-assets@v1.1.0
+      if: matrix.os == 'ubuntu-latest' && startsWith(github.ref, 'refs/tags/')
+      with:
+        upload_url: ${{ steps.artifacts-linux.outputs.artifact-url }}
+        asset_path: ./adlib2vgm-linux.zip
+        asset_name: adlib2vgm-linux.zip
+        asset_content_type: application/zip
 
+    - name: Upload release assets (windows)
+      uses: sekwah41/upload-release-assets@v1.1.0
+      if: matrix.os == 'windows-latest' && startsWith(github.ref, 'refs/tags/')
+      with:
+        upload_url: ${{ steps.artifacts-windows.outputs.artifact-url }}
+        asset_path: ./adlib2vgm-win32.zip
+        asset_name: adlib2vgm-win32.zip
+        asset_content_type: application/zip
