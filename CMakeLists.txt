@@ -6,7 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set (CMAKE_CXX_FLAGS "-DDEBUG -Wall")
-#set (CMAKE_EXE_LINKER_FLAGS "-static -s")
+set (CMAKE_EXE_LINKER_FLAGS "-static")
+set (CMAKE_EXE_LINKER_FLAGS_RELEASE "-static -s")
 
 include_directories("binio" "utfcpp" "zstr")
 
