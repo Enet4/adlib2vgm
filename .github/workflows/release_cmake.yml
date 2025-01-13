@@ -24,7 +24,8 @@ jobs:
       # We'll use this as our working directory for all subsequent commands
       run: cmake -E make_directory ${{github.workspace}}/build
 
-    - name: Configure CMake
+    - name: Configure CMake (linux)
+      if: matrix.os == 'ubuntu-latest'
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
       shell: bash
@@ -34,6 +35,12 @@ jobs:
       # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
 
+    - name: Configure CMake (windows)
+      if: matrix.os == 'windows-latest'
+      shell: bash
+      working-directory: ${{github.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -A win32
+
     - name: Build
       working-directory: ${{github.workspace}}/build
       shell: bash
@@ -41,9 +48,17 @@ jobs:
       run: cmake --build . --config $BUILD_TYPE
 
     - name: Archive production artifacts
+      if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
       with:
         path: ${{github.workspace}}/build/adlib2vgm
+        if-no-files-found: error
+
+    - name: Archive production artifacts (windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        path: ${{github.workspace}}/build/adlib2vgm.exe
         if-no-files-found: error
 
     - name: Release
