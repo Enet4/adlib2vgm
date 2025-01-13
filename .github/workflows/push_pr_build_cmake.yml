@@ -64,6 +64,15 @@ jobs:
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
       
+    - name: Test executable
+      if: matrix.os == 'ubuntu-latest'
+      working-directory: ${{github.workspace}}/build
+      run: ./adlib2vgm --help
+
+    - name: Test executable (windows)
+      if: matrix.os == 'windows-latest'
+      run: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/adlib2vgm.exe --help
+  
     - name: Archive production artifacts
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
