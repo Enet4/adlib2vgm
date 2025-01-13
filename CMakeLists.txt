@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set (BUILD_SHARED_LIBS OFF)
+
 set (CMAKE_CXX_FLAGS "-DDEBUG -Wall")
 set (CMAKE_EXE_LINKER_FLAGS "-static")
 set (CMAKE_EXE_LINKER_FLAGS_RELEASE "-static -s")
@@ -17,8 +19,6 @@ file(GLOB_RECURSE SOURCES_FMTS_DEPS "deps/*.c")
 file(GLOB_RECURSE SOURCES_FAKE_ADPLUG "FakeAdplug/*.cpp")
 
 set(ZLIB_USE_STATIC_LIBS "ON")
-
-find_package(ZLIB REQUIRED)
 if (WIN32)
 	set(VCPKG_TARGET_ARCHITECTURE x86)
 	set(VCPKG_CRT_LINKAGE static)
@@ -26,6 +26,7 @@ if (WIN32)
 else()
 	set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
 endif()
+find_package(ZLIB REQUIRED)
 
 add_executable(adlib2vgm
 	${SOURCES_BINIO}
