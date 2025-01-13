@@ -17,6 +17,22 @@ jobs:
     runs-on: ${{matrix.os}}
 
     steps:
+    - name: Cache vcpkg packages
+      if: matrix.os == 'windows-latest'
+      uses: actions/cache@v3
+      env:
+        cache-name: vcpkg-packages
+      with:
+        path: |
+          C:/vcpkg/archives
+          C:/vcpkg/packages
+          C:/vcpkg/installed
+        key: ${{ env.cache-name }}-v1
+
+    - name: Install zlib (vcpkg)
+      if: matrix.os == 'windows-latest'
+      run: vcpkg install zlib:x86-windows-static
+
     - uses: actions/checkout@v4
 
     - name: Create Build Environment
