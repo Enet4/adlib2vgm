@@ -20,6 +20,8 @@
 
 #include "VgmOpl.h"
 #include "utf8.h"
+// impose C++17 capabilities of utf8
+#include "utf8/cpp17.h"
 #include "zstr.h"
 
 #define OPL2_CLOCK 3579545
